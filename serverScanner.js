@@ -1,48 +1,61 @@
 /** @param {NS} ns **/
 export async function main(ns) {
-    // Function to recursively scan for all servers
-    function getAllServers(ns, root = 'home', found = []) {
-        found.push(root);
-        for (const server of ns.scan(root)) {
-            if (!found.includes(server)) {
-                getAllServers(ns, server, found);
-            }
-        }
-        return found;
-    }
+    ns.disableLog('ALL');
 
-    // Get all servers in the network
+    // Get all servers and their information
     const servers = getAllServers(ns);
-    
-    // Collect server info only for servers with root access
-    const serverInfoArray = servers
-        .filter(server => ns.hasRootAccess(server)) // Only include servers we have root access to
-        .map(server => {
-            const info = ns.getServer(server);
-            return {
+    const serverData = [];
+
+    // Gather server information
+    for (const server of servers) {
+        if (ns.hasRootAccess(server)) {
+            const serverInfo = ns.getServer(server);
+            serverData.push({
                 name: server,
-                maxMoney: info.moneyMax,
-                ram: info.maxRam
-            };
-        });
-
-    // Sort servers by RAM in descending order
-    serverInfoArray.sort((a, b) => b.ram - a.ram);
-
-    ns.tprint("Server Information (Sorted by RAM, Only with Root Access):");
-    ns.tprint("--------------------------------------------------------");
-    ns.tprint("Server Name           | Max Money       | RAM (GB)");
-    ns.tprint("--------------------------------------------------------");
-
-    // Display the server's information
-    for (const serverInfo of serverInfoArray) {
-        const maxMoney = ns.nFormat(serverInfo.maxMoney, "$0.000a"); // Format max money
-        
-        ns.tprint(`${serverInfo.name.padEnd(20)} | ${maxMoney.padEnd(15)} | ${serverInfo.ram} GB`);
+                requiredHackingLevel: serverInfo.requiredHackingSkill,
+                maxMoney: serverInfo.moneyMax,
+                ram: serverInfo.maxRam
+            });
+        }
     }
 
-    ns.tprint("--------------------------------------------------------");
+    // Sort servers by required hacking level
+    serverData.sort((a, b) => a.requiredHackingLevel - b.requiredHackingLevel);
 
-    // Show the total number of servers with root access
-    ns.tprint(`Total servers with root access: ${serverInfoArray.length}`);
+    // Display the sorted list
+    ns.tprint(`Server Scan Results (Sorted by Required Hacking Level):`);
+    ns.tprint(`--------------------------------------------------------`);
+    ns.tprint(`Server Name             | Required Hacking Level | Max Money        | RAM`);
+    ns.tprint(`--------------------------------------------------------`);
+    serverData.forEach(server => {
+        ns.tprint(`${server.name.padEnd(24)} | ${server.requiredHackingLevel.toString().padEnd(21)} | $${formatMoney(server.maxMoney).padStart(14)} | ${server.ram}`);
+    });
+    ns.tprint(`--------------------------------------------------------`);
+    ns.tprint(`Total Servers Accessible: ${serverData.length}`);
+}
+
+/** 
+ * Formats money with commas and a dollar sign.
+ * @param {number} amount 
+ * @returns {string}
+ */
+function formatMoney(amount) {
+    return amount.toLocaleString();
+}
+
+/** 
+ * Retrieves all servers in the network recursively.
+ * @param {NS} ns 
+ * @param {string} root 
+ * @param {string[]} found 
+ * @returns {string[]} 
+ */
+function getAllServers(ns, root = 'home', found = []) {
+    found.push(root);
+    for (const server of ns.scan(root)) {
+        if (!found.includes(server)) {
+            getAllServers(ns, server, found);
+        }
+    }
+    return found;
 }
