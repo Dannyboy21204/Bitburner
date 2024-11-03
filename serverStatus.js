@@ -18,7 +18,7 @@ export async function main(ns) {
 
     // Get the current values
     const moneyAvailable = ns.getServerMoneyAvailable(target);
-    const maxMoney = serverInfo.moneyMax;
+    const maxMoney = ns.getServerMaxMoney(target);
     const currentSecurity = ns.getServerSecurityLevel(target);
     const minSecurity = ns.getServerMinSecurityLevel(target);
     const weakenTime = ns.getWeakenTime(target);
