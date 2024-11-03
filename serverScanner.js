@@ -2,14 +2,20 @@
 export async function main(ns) {
     ns.disableLog('ALL');
 
+    // Get the player's hacking level
+    const player = ns.getPlayer();
+    const playerHackingLevel = player.skills.hacking;
+
     // Get all servers and their information
     const servers = getAllServers(ns);
     const serverData = [];
 
     // Gather server information
     for (const server of servers) {
-        if (ns.hasRootAccess(server)) {
-            const serverInfo = ns.getServer(server);
+        const serverInfo = ns.getServer(server);
+        
+        // Only include servers where required hacking level is <= player's hacking level
+        if (ns.hasRootAccess(server) && serverInfo.requiredHackingSkill <= playerHackingLevel) {
             serverData.push({
                 name: server,
                 requiredHackingLevel: serverInfo.requiredHackingSkill,
