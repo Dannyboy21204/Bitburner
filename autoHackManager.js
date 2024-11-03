@@ -44,7 +44,10 @@ async function distributeWork(ns, operation, target) {
     const ramPerThread = ns.getScriptRam(scriptName);
     let threadsNeeded = calculateThreads(ns, target, operation);
     
-    for (const server of allServers) {
+    // Filter to exclude private servers with names like "pserv-0", "pserv-1", etc.
+    const usableServers = allServers.filter(server => !server.startsWith("0pserv-")  || server.startsWith("1pserv-"));
+
+    for (const server of usableServers) {  // Use filtered list here
         let maxThreads = Math.floor((ns.getServerMaxRam(server) - ns.getServerUsedRam(server)) / ramPerThread);
         
         if (server === 'home') maxThreads = Math.max(0, maxThreads - Math.floor(MIN_HOME_RAM / ramPerThread));
