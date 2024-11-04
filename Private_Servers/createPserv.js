@@ -5,8 +5,8 @@ export async function main(ns) {
     const ram = 1024; // Set RAM for each server
     let createdCount = 0;
 
-    // Loop through the first digit (0 to 4)
-    for (let i = 0; i <= 4; i++) {
+    // Loop through the first digit (0 to 3)
+    for (let i = 0; i <= 3; i++) {
         // Loop through the second digit (0 to 4)
         for (let j = 0; j <= 4; j++) {
             const serverName = `${i}pserv-${j}`;
