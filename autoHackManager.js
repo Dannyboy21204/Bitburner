@@ -39,15 +39,12 @@ async function manageHackCycle(ns, target) {
 
 // Distribute work across all servers for a specified operation (hack, grow, weaken)
 async function distributeWork(ns, operation, target) {
-    const allServers = getAllServers(ns);
+    const allServers = getAllServers(ns); // Get servers excluding private servers
     const scriptName = `temp-${operation}.js`;
     const ramPerThread = ns.getScriptRam(scriptName);
     let threadsNeeded = calculateThreads(ns, target, operation);
     
-    // Filter to exclude private servers with names like "pserv-0", "pserv-1", etc.
-    const usableServers = allServers.filter(server => !server.startsWith("0pserv-")  || server.startsWith("1pserv-"));
-
-    for (const server of usableServers) {  // Use filtered list here
+    for (const server of allServers) {
         let maxThreads = Math.floor((ns.getServerMaxRam(server) - ns.getServerUsedRam(server)) / ramPerThread);
         
         if (server === 'home') maxThreads = Math.max(0, maxThreads - Math.floor(MIN_HOME_RAM / ramPerThread));
@@ -87,11 +84,11 @@ async function createScripts(ns) {
     await ns.write('temp-weaken.js', 'export async function main(ns) { await ns.weaken(ns.args[0]) }', 'w');
 }
 
-// Recursively find all servers accessible from "home"
+// Recursively find all servers accessible from "home" excluding private servers
 function getAllServers(ns, root = 'home', found = new Set()) {
     found.add(root);
     for (const server of ns.scan(root)) {
-        if (!found.has(server)) {
+        if (!found.has(server) && !(server.startsWith("0pserv-") || server.startsWith("1pserv-") || server.startsWith("2pserv-") || server.startsWith("3pserv-")) && !server.startsWith("live-tracker")) { // Exclude private servers
             getAllServers(ns, server, found);
         }
     }
